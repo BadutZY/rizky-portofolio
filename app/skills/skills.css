@@ -1,0 +1,223 @@
+/* ───────── Skills page ───────── */
+
+/* intro: text + stats on one side, orbit on the other */
+.sk-intro { display: grid; gap: clamp(2.5rem, 6vw, 4.5rem); align-items: center; }
+@media (min-width: 960px) { .sk-intro { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); } }
+.sk-intro-p { max-width: 38em; font-size: clamp(1.05rem, 1.6vw, 1.25rem); line-height: 1.55; margin-top: 1.5rem; }
+.sk-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: clamp(1.75rem, 4vw, 2.75rem); }
+.sk-stats li { border-top: 1px solid var(--line); padding-top: 1rem; transition: border-color 0.4s, opacity 1s var(--ease), transform 1.1s var(--ease); }
+.sk-stats li:hover { border-color: var(--fg); }
+.sk-stat-n { display: block; font-size: clamp(2rem, 4.4vw, 3.4rem); font-weight: 700; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+.sk-stat-l { display: block; margin-top: 0.5rem; color: var(--mut); font-size: 0.9rem; }
+
+/* ── Orbit ──
+   Hover rules (why every logo can be hovered now):
+   - Every wrapper layer (stage, rings, slots...) is pointer-events: none. Only the logo button itself is hit-testable.
+     Before, the full-size transparent ring layers stacked on top of each other and swallowed the pointer, so only
+     a few logos (the ones on the top layer) ever got the hover.
+   - No preserve-3d / translateZ inside the stage any more. The stage is one flat plane that leans toward the pointer,
+     so hit-testing and paint order stay simple and stable (no flicker).
+   - The lean freezes while a logo is hovered (class .hold), so the logo never slides away from under the cursor. */
+.orb { --chip: clamp(38px, 8.6cqw, 58px); position: relative; width: min(100%, 620px); aspect-ratio: 1; margin-inline: auto; container-type: inline-size; perspective: 1200px; }
+/* Phones and tablets: the rings are square boxes that rotate, and a rotated square is up to 1.41x wider than the orbit,
+   which pushed the page sideways. Everything visible stays inside the orbit box, so clip the rest (desktop is untouched). */
+@media (max-width: 959px) { .orb { overflow: clip; overflow-clip-margin: 12px; } }
+.orb-stage { --px: 0; --py: 0; position: absolute; inset: 0; pointer-events: none; transform: rotateX(calc(var(--py) * -6deg)) rotateY(calc(var(--px) * 7deg)); transition: transform 0.45s var(--ease); will-change: transform; }
+.orb-core { position: absolute; left: 50%; top: 50%; z-index: 3; width: 25cqw; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; display: grid; place-items: center; text-align: center; background: var(--fg); color: var(--bg); pointer-events: none; }
+.orb-core-in { position: relative; display: grid; gap: 0.1rem; padding: 0 0.4rem; animation: orb-swap 0.45s var(--ease) both; }
+.orb-core-in b { font-size: clamp(0.8rem, 3.4cqw, 1.5rem); font-weight: 700; letter-spacing: -0.04em; line-height: 1.05; overflow-wrap: anywhere; }
+.orb-core-in small { font-size: clamp(0.5rem, 1.9cqw, 0.78rem); opacity: 0.65; letter-spacing: 0.08em; text-transform: uppercase; }
+.orb-halo { position: absolute; inset: 0; border-radius: 50%; border: 1px solid var(--fg); opacity: 0; animation: orb-ping 3.6s var(--ease-io) infinite; pointer-events: none; }
+.orb-halo-2 { animation-delay: 1.8s; }
+@keyframes orb-ping { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(2.1); opacity: 0; } }
+@keyframes orb-swap { from { opacity: 0; transform: scale(0.8) translateY(6px); } to { opacity: 1; transform: none; } }
+
+.orb-rw { position: absolute; inset: 0; z-index: 1; pointer-events: none; transition: opacity 1s var(--ease), transform 1.4s var(--ease); transition-delay: calc(var(--r) * 0.2s); }
+.orb:not(.in) .orb-rw { opacity: 0; transform: scale(0.35); }
+.orb.in .orb-rw { opacity: 1; transform: none; }
+/* the ring that holds the hovered logo always paints above the other rings */
+.orb-rw:has(.orb-chip:hover), .orb-rw:has(.orb-chip:focus-visible) { z-index: 2; }
+.orb-ring { position: absolute; inset: 0; pointer-events: none; will-change: transform; animation: orb-spin var(--dur) linear infinite; animation-direction: var(--dir); }
+.orb-path { position: absolute; left: 50%; top: 50%; width: calc(var(--rad) * 2); aspect-ratio: 1; translate: -50% -50%; border: 1px dashed var(--line); border-radius: 50%; pointer-events: none; }
+.orb-slot { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; transform: rotate(var(--a)) translateX(var(--rad)); }
+.orb-pos { position: absolute; left: 0; top: 0; translate: -50% -50%; pointer-events: none; }
+.orb-item { display: block; pointer-events: none; will-change: transform; animation: orb-unspin var(--dur) linear infinite; animation-direction: var(--dir); }
+/* the only hit-testable part: the logo button. ::after is an invisible, slightly larger hit area that does not scale, so the hover never flickers at the edge */
+.orb-chip { position: relative; pointer-events: auto; display: grid; place-items: center; width: var(--chip); height: var(--chip); border-radius: 50%; background: var(--bg); border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(var(--fg-rgb), 0.07); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: transform 0.4s var(--ease), border-color 0.3s, box-shadow 0.4s; }
+.orb-chip::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; }
+.orb-chip .sk-logo { width: 56%; height: 56%; pointer-events: none; }
+.orb-chip:hover, .orb-chip:focus-visible, .orb-chip.is-on { transform: scale(1.28); border-color: var(--fg); box-shadow: 0 14px 40px rgba(var(--fg-rgb), 0.22); }
+.orb-chip:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+.orb:hover .orb-ring, .orb:hover .orb-item, .orb.hold .orb-ring, .orb.hold .orb-item { animation-play-state: paused; }
+@keyframes orb-spin { to { transform: rotate(360deg); } }
+@keyframes orb-unspin { from { transform: rotate(calc(var(--a) * -1)); } to { transform: rotate(calc(var(--a) * -1 - 360deg)); } }
+
+/* ── Stack explorer ── */
+.sk-sec-tight { padding-top: 0; }
+.sk-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-top: clamp(1.5rem, 3vw, 2.25rem); }
+.sk-tabs { position: relative; display: flex; gap: 0.15rem; padding: 0.3rem; max-width: 100%; border: 1px solid var(--line); border-radius: 999px; overflow-x: auto; scrollbar-width: none; }
+.sk-tabs::-webkit-scrollbar { display: none; }
+.sk-pill { position: absolute; z-index: 0; left: 0; top: 0.3rem; bottom: 0.3rem; border-radius: 999px; background: var(--fg); pointer-events: none; transition: transform 0.6s var(--ease), width 0.6s var(--ease); }
+.sk-tab { position: relative; z-index: 1; flex: none; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.55rem 1.05rem; border-radius: 999px; color: var(--mut); font-size: 0.9rem; white-space: nowrap; transition: color 0.35s; }
+.sk-tab:hover { color: var(--fg); }
+.sk-tab[aria-selected="true"] { color: var(--bg); }
+.sk-tab b { font-size: 0.7rem; font-weight: 500; opacity: 0.55; font-variant-numeric: tabular-nums; }
+
+.sk-search { display: flex; align-items: center; gap: 0.65rem; height: 48px; width: min(100%, 280px); padding: 0 1rem; border: 1px solid var(--line); border-radius: 999px; color: var(--mut); cursor: text; transition: border-color 0.3s, box-shadow 0.4s, width 0.6s var(--ease), color 0.3s; }
+.sk-search:focus-within { width: min(100%, 340px); border-color: var(--fg); color: var(--fg); box-shadow: 0 0 0 4px rgba(var(--fg-rgb), 0.08); }
+.sk-search input { flex: 1; min-width: 0; height: 100%; background: none; border: 0; outline: 0; color: var(--fg); font: inherit; font-size: 0.95rem; }
+.sk-search input::placeholder { color: var(--mut); }
+.sk-search input::-webkit-search-cancel-button { display: none; }
+.sk-clear { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--fg); color: var(--bg); animation: orb-swap 0.3s var(--ease) both; }
+.sk-count { margin: 1.25rem 0 1.25rem; color: var(--mut); font-size: 0.88rem; min-height: 1.3em; }
+.sk-empty { padding: 3rem 0; color: var(--mut); animation: orb-swap 0.5s var(--ease) both; }
+
+/* cards enter one after another when the section appears, and again every time the category changes */
+.sk-explorer:not(.in) .sk-cell { opacity: 0; }
+.sk-explorer.in .sk-cell { animation: sk-in 0.9s var(--ease) both; animation-delay: calc(var(--i) * 90ms); }
+@keyframes sk-in { from { opacity: 0; transform: translateY(40px) scale(0.96); } to { opacity: 1; transform: none; } }
+.sk-grid { perspective: 1400px; }
+.sk-grid.single { grid-template-columns: minmax(0, 1fr); }
+.sk-grid.single .sk-icons { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); }
+
+/* tilt: --rx / --ry / --mx / --my come from lib/tilt.ts */
+.tilt { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.8s var(--ease), border-color 0.4s, background 0.4s; will-change: transform; }
+.tilt.hot { transition: transform 0.12s linear, border-color 0.4s, background 0.4s; }
+.sk-explorer .sk-card.tilt { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.8s var(--ease), border-color 0.4s, background 0.4s; }
+.sk-explorer .sk-card.tilt.hot { transition: transform 0.12s linear, border-color 0.4s, background 0.4s; }
+.sk-card { transform-style: preserve-3d; }
+.sk-head { display: flex; align-items: center; justify-content: space-between; }
+.sk-num { color: var(--mut); font-size: 0.85rem; font-variant-numeric: tabular-nums; transition: color 0.3s, transform 0.5s var(--ease); }
+.sk-card:hover .sk-num { color: var(--fg); transform: translateX(-4px); }
+
+.sk-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 0.6rem; }
+.sk-t { position: relative; isolation: isolate; overflow: hidden; display: grid; justify-items: center; gap: 0.6rem; padding: 1rem 0.5rem 0.85rem; border: 1px solid var(--line); border-radius: 16px; text-align: center; cursor: pointer; user-select: none; transition: background 0.35s, border-color 0.35s, transform 0.55s var(--spring), opacity 0.4s, filter 0.4s, box-shadow 0.4s; }
+.sk-t::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 0%, rgba(var(--fg-rgb), 0.14), transparent 72%); opacity: 0; transition: opacity 0.4s; }
+.sk-t:hover { border-color: var(--fg); transform: translateY(-5px) scale(1.04); }
+.sk-t:hover::before { opacity: 1; }
+.sk-ic { display: grid; place-items: center; height: 34px; transform: translate(var(--tx, 0px), var(--ty, 0px)); transition: transform 0.4s var(--ease); }
+.sk-t:hover .sk-ic { transform: translate(var(--tx, 0px), var(--ty, 0px)) scale(1.3) rotate(-6deg); }
+.sk-logo { display: block; width: 34px; height: 34px; object-fit: contain; user-select: none; }
+[data-theme="dark"] .sk-logo-mono { filter: invert(1); }
+.sk-name { font-size: 0.78rem; line-height: 1.2; opacity: 0.7; transition: opacity 0.3s; }
+.sk-t:hover .sk-name { opacity: 1; }
+.sk-t.dim { opacity: 0.16; filter: grayscale(1); transform: scale(0.93); }
+.sk-t.hit { border-color: var(--fg); animation: sk-hit 1.8s ease-in-out infinite; }
+@keyframes sk-hit { 50% { box-shadow: 0 0 0 5px rgba(var(--fg-rgb), 0.1); } }
+.sk-t.pulse::after { content: ""; position: absolute; left: 50%; top: 40%; width: 12px; height: 12px; translate: -50% -50%; border-radius: 50%; border: 2px solid var(--fg); pointer-events: none; animation: sk-ripple 0.75s var(--ease) both; }
+@keyframes sk-ripple { from { transform: scale(0.4); opacity: 0.9; } to { transform: scale(12); opacity: 0; } }
+
+/* My workspace sits right under the stack cards, in the same section */
+.sk-workspace { margin-top: clamp(3rem, 6vw, 5rem); }
+
+/* Daily tools: tilt + glare; keep the coloured logos visible on hover (the default hover inverts the whole tile) */
+.tools-grid .tool { position: relative; isolation: isolate; overflow: hidden; }
+.tools-grid .tool.tilt { transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); }
+.tools-grid .tool.tilt:hover { transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-4px); }
+.tools-grid .tool:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); color: inherit; border-color: var(--fg); }
+.tools-grid .tool::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity 0.35s; background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), rgba(var(--fg-rgb), 0.16), transparent 65%); }
+.tools-grid .tool:hover::after { opacity: 1; }
+.tools-grid .tool .sk-logo { width: 30px; height: 30px; transition: transform 0.6s var(--spring); }
+.tools-grid .tool:hover .sk-logo { transform: scale(1.25) rotate(-8deg); }
+
+/* Recent focus: tags drift gently, each on its own beat */
+.sk-focus li { animation: sk-float 6s ease-in-out infinite; animation-delay: calc(var(--i) * -1.7s); }
+.sk-focus li:hover { animation-play-state: paused; transform: scale(1.08); }
+@keyframes sk-float { 50% { transform: translateY(-7px); } }
+
+@media (max-width: 640px) {
+  .sk-stats { gap: 0.6rem; }
+  .sk-search, .sk-search:focus-within { width: 100%; }
+  .sk-tabs { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .orb-ring, .orb-item, .orb-halo, .sk-focus li, .sk-t.hit { animation: none; }
+  .orb-item { transform: rotate(calc(var(--a) * -1)); }
+  .orb:not(.in) .orb-rw { opacity: 1; transform: none; }
+  .sk-explorer:not(.in) .sk-cell { opacity: 1; }
+  .sk-explorer.in .sk-cell { animation: none; }
+  .sk-t:hover, .sk-t:hover .sk-ic, .tilt { transform: none; }
+}
+
+/* ───────── GitHub contribution graph (black and white: brightness = amount of activity) ───────── */
+.gh { --cs: 15px; --gap: 4px; --c0: color-mix(in srgb, var(--fg) 7%, transparent); }
+.gh[data-range="6"] { --cs: clamp(15px, 2.4vw, 25px); --gap: 5px; }
+.gh[data-range="3"] { --cs: clamp(18px, 3.4vw, 36px); --gap: 6px; }
+@media (max-width: 700px) {
+  .gh { --cs: 12px; --gap: 3px; }
+  .gh[data-range="6"] { --cs: 16px; }
+  .gh[data-range="3"] { --cs: 22px; }
+}
+.gh-top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem 2rem; margin-bottom: 1.25rem; }
+.gh-count { font-size: clamp(1.1rem, 2vw, 1.45rem); letter-spacing: -0.02em; }
+.gh-count b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.gh-user { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.5rem; color: var(--mut); font-size: 0.92rem; transition: color 0.3s; }
+.gh-user:hover { color: var(--fg); }
+
+.gh-panel { border: 1px solid var(--line); border-radius: var(--r-md); padding: clamp(1rem, 2.4vw, 1.75rem); overflow: hidden; transition: border-color 0.4s; }
+.gh-panel:hover { border-color: color-mix(in srgb, var(--fg) 35%, var(--line)); }
+.gh-scroll { overflow-x: auto; padding-bottom: 0.9rem; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.gh-body { width: max-content; min-width: 100%; }
+.gh-months { display: grid; grid-template-columns: repeat(var(--weeks), var(--cs)); column-gap: var(--gap); margin-left: calc(2.6rem + 0.6rem); height: 1.4rem; font-size: 0.78rem; color: var(--mut); }
+.gh-months span { white-space: nowrap; }
+.gh-row { display: flex; gap: 0.6rem; }
+.gh-days { display: grid; grid-template-rows: repeat(7, var(--cs)); row-gap: var(--gap); width: 2.6rem; font-size: 0.74rem; color: var(--mut); }
+.gh-days li { display: flex; align-items: center; line-height: 1; }
+.gh-wrap { position: relative; }
+.gh-grid { display: grid; grid-template-columns: repeat(var(--weeks), var(--cs)); grid-template-rows: repeat(7, var(--cs)); gap: var(--gap); }
+
+.gh-c { display: block; width: var(--cs); height: var(--cs); border-radius: 28%; background: var(--c0); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fg) 6%, transparent); transition: transform 0.25s var(--spring), opacity 0.3s, background 0.3s; }
+.gh-c[data-l="1"] { background: color-mix(in srgb, var(--fg) 24%, transparent); }
+.gh-c[data-l="2"] { background: color-mix(in srgb, var(--fg) 46%, transparent); }
+.gh-c[data-l="3"] { background: color-mix(in srgb, var(--fg) 72%, transparent); }
+.gh-c[data-l="4"] { background: var(--fg); }
+.gh-blank { background: none; box-shadow: none; }
+.gh-grid .gh-c:not(.gh-blank) { cursor: pointer; }
+.gh-grid .gh-c.hot { transform: scale(1.35); position: relative; z-index: 2; box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px var(--fg); }
+.gh-grid .gh-c.pin { box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--fg); }
+
+/* entrance: cells pop in column by column once the graph is on screen; the grid is remounted on a range change so it replays */
+.gh:not(.in) .gh-grid .gh-c:not(.gh-blank) { opacity: 0; transform: scale(0.3); }
+.gh.in .gh-grid .gh-c:not(.gh-blank) { animation: gh-pop 0.55s var(--spring) both; animation-delay: calc(var(--w) * 14ms); }
+@keyframes gh-pop { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: scale(1); } }
+
+/* legend hover dims every other level */
+.gh[data-hl] .gh-grid .gh-c:not(.gh-blank) { opacity: 0.14; }
+.gh[data-hl="0"] .gh-grid .gh-c[data-l="0"], .gh[data-hl="1"] .gh-grid .gh-c[data-l="1"], .gh[data-hl="2"] .gh-grid .gh-c[data-l="2"],
+.gh[data-hl="3"] .gh-grid .gh-c[data-l="3"], .gh[data-hl="4"] .gh-grid .gh-c[data-l="4"] { opacity: 1; }
+
+.gh-tip { position: absolute; z-index: 5; width: 190px; transform: translate(-50%, calc(-100% - 12px)); padding: 0.6rem 0.8rem; border-radius: 12px; background: var(--fg); color: var(--bg); font-size: 0.8rem; line-height: 1.35; pointer-events: none; display: grid; gap: 0.1rem; text-align: center; }
+.gh-tip b { font-size: 0.9rem; }
+.gh-tip span { opacity: 0.7; }
+.gh-tip i { position: absolute; bottom: -4px; width: 8px; height: 8px; background: var(--fg); transform: translateX(-50%) rotate(45deg); }
+
+.gh-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.9rem 1.5rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: 0.88rem; }
+.gh-detail { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; min-height: 1.5rem; }
+.gh-detail b { font-weight: 700; }
+.gh-hint { color: var(--mut); }
+.gh-bar { width: 90px; height: 4px; border-radius: 4px; background: var(--c0); overflow: hidden; }
+.gh-bar i { display: block; height: 100%; background: var(--fg); border-radius: 4px; transition: width 0.35s var(--ease); }
+.gh-legend { display: inline-flex; align-items: center; gap: 4px; color: var(--mut); font-size: 0.78rem; }
+.gh-legend span { margin-inline: 0.3rem; }
+.gh-key { width: 14px; height: 14px; padding: 0; border: 0; cursor: pointer; }
+.gh-key:hover, .gh-key[aria-pressed="true"] { transform: scale(1.3); }
+
+.gh-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; margin-top: 1.25rem; }
+.gh-stats li { border-top: 1px solid var(--line); padding: 1.1rem 0.25rem 0.4rem; display: grid; align-content: start; gap: 0.3rem; transition: border-color 0.4s; }
+.gh-stats li:hover { border-color: var(--fg); }
+.gh-n { display: block; font-size: clamp(1.9rem, 3.6vw, 2.8rem); font-weight: 700; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+.gh-l { margin-top: 0.4rem; }
+.gh-stats em { font-style: normal; font-size: 0.84rem; color: var(--mut); }
+.gh-bars { display: flex; align-items: flex-end; gap: 5px; height: 2.4rem; }
+.gh-bars span { flex: 1; height: 100%; display: flex; align-items: flex-end; }
+.gh-bars i { display: block; width: 100%; border-radius: 4px; background: color-mix(in srgb, var(--fg) 28%, transparent); transition: height 0.5s var(--ease), background 0.3s; }
+.gh-bars .top i, .gh-bars span:hover i { background: var(--fg); }
+.gh-note { margin-top: 1rem; font-size: 0.78rem; color: var(--mut); }
+@media (prefers-reduced-motion: reduce) {
+  .gh.in .gh-grid .gh-c:not(.gh-blank) { animation: none; }
+  .gh:not(.in) .gh-grid .gh-c:not(.gh-blank) { opacity: 1; transform: none; }
+  .gh-grid .gh-c.hot { transform: none; }
+}
+
+/* the global .chip.on is transparent (an animated pill sits behind it on the Projects page), so give these chips a plain fill */
+.gh .chip.on { background: var(--fg); color: var(--bg); border-color: var(--fg); }

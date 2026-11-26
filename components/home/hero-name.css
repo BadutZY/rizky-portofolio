@@ -1,0 +1,31 @@
+/* Hero name: idle glitch (lib/title-glitch.ts) + ASCII hover lens (lib/ascii-lens.ts), both in their light versions.
+   Builds on the .gt-* / .st-* rules in globals.css, only the hero specifics live here. */
+
+/* the wrapper hugs the widest line, so the lens only opens while the pointer is over the name itself */
+.hero-title .gt-wrap { display: block; width: fit-content; max-width: 100%; }
+.hero-title .gt { display: block; max-width: none; }
+
+/* every line is as wide as its text: Hero.tsx reads offsetWidth to fit the font size */
+.hero-title .hl > span { width: max-content; }
+
+/* the name rises in as a whole line (.hl > span), so the per letter rise of the page titles is switched off here */
+.hero-title .st-c { transform: none; transition: none; }
+
+/* the lens measures the letters, so it waits until the rise has finished */
+.hero-title:not(.is-revealed) .gt-wrap { pointer-events: none; }
+
+/* after the reveal, RGB bands may slide past the line boxes without being cut (and no letter can ever be clipped) */
+.hero-title.is-revealed .hl { overflow: visible; }
+
+/* ───────── Hero background ─────────
+   .hero-dots is a static dot grid drawn by CSS (nothing runs per frame). The interactive lattice on top of it is the
+   "home" backdrop (lib/bg/home.ts), the same engine the other pages use. */
+.hero { isolation: isolate; }
+.hero .hero-dots {
+  background-image: radial-gradient(rgba(var(--fg-rgb), 0.1) 1px, transparent 1.3px);
+  background-size: 24px 24px;
+}
+[data-go] .hero .hero-dots { animation: hero-dots-in 1.2s var(--ease) both; }
+@keyframes hero-dots-in { from { opacity: 0; } }
+/* the edge fade is baked into the lattice opacity, so no mask has to be re-composited while it redraws */
+.pbg[data-v="home"] { -webkit-mask-image: none; mask-image: none; }

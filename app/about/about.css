@@ -1,0 +1,92 @@
+/* ───────── About page: extra motion layer ───────── */
+
+/* roles band under the hero */
+.about-roles { margin-block: clamp(0.5rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2rem); }
+
+/* intro: badge stays in view while the text scrolls past it */
+.about-copy { display: grid; gap: 1.4rem; }
+.about-copy .lead { margin-top: 0; }
+@media (min-width: 900px) {
+  .about-grid > :first-child { position: sticky; top: 6.5rem; align-self: start; }
+}
+
+/* quick facts */
+.facts2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.9rem; margin-top: 2.5rem; }
+.fact { position: relative; height: 100%; display: grid; gap: 0.3rem; align-content: start; padding: 1.15rem 1.25rem 1.3rem; border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; outline-offset: -2px; transition: border-color 0.3s, background-color 0.3s; }
+.facts2 li { display: grid; }
+@media (hover: hover) { .fact:hover { border-color: color-mix(in srgb, var(--fg) 45%, var(--line)); background: var(--soft); } }
+.fact-n { position: absolute; top: 1rem; right: 1.1rem; font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace; font-size: 0.74rem; color: var(--mut); opacity: 0.55; }
+.fact-k { color: var(--mut); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.fact-v { white-space: pre-line; font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; }
+
+/* quote */
+.qt2 { isolation: isolate; min-height: clamp(15rem, 24vw, 22rem); display: flex; align-items: center; }
+.qt2-ic { position: absolute; right: clamp(0.25rem, 2.5vw, 2.5rem); top: 0; bottom: 0; z-index: -1; display: flex; align-items: center; opacity: 0.12; pointer-events: none; will-change: transform; line-height: 0; }
+.qt2-ic svg { width: clamp(90px, 14vw, 200px); height: auto; }
+.qw-mask { display: inline-block; overflow: hidden; vertical-align: top; padding: 0.06em 0.04em 0.18em; margin: -0.06em -0.04em -0.18em; }
+.qw { display: inline-block; }
+/* entrance: only hidden while JavaScript is running (.qt-js), so the quote can never stay invisible without it */
+.qt-js .qw { transform: translateY(110%); will-change: transform, opacity; }
+.qt-js.qt-in .qw { transform: none; transition: transform 1.1s var(--ease) calc(var(--i, 0) * 70ms); }
+@media (prefers-reduced-motion: reduce) { .qt-js .qw { transform: none; transition: none; } }
+
+/* journey */
+.jt { position: relative; --yw: 14rem; --lx: 7px; }
+.jt-track, .jt-line { position: absolute; left: var(--lx); width: 2px; margin-left: -1px; top: 0; height: 0; border-radius: 2px; pointer-events: none; }
+.jt-track { background: var(--line); }
+.jt-line { background: var(--fg); transform-origin: 50% 0; transform: scaleY(0); will-change: transform; }
+.jt-item { position: relative; display: grid; gap: 0.7rem; padding: 1.25rem 0 1.25rem 2.4rem; }
+.jt-dot { position: absolute; left: calc(var(--lx) - 8px); top: calc(1.25rem + clamp(1rem, 2.5vw, 1.8rem) - 8px); width: 16px; height: 16px; border-radius: 50%; background: var(--bg); border: 2px solid var(--line); z-index: 1; transition: background 0.4s, border-color 0.4s, transform 0.6s var(--spring), box-shadow 0.6s var(--ease); }
+.jt-item.on .jt-dot { background: var(--fg); border-color: var(--fg); }
+.jt-item.cur .jt-dot { transform: scale(1.35); box-shadow: 0 0 0 6px rgba(var(--fg-rgb), 0.14); }
+.jt-y { display: block; width: fit-content; transition: color 0.6s var(--ease), opacity 0.6s var(--ease), transform 0.7s var(--ease); }
+.jt-item.on .jt-y { color: var(--fg); }
+.jt-item.cur .jt-y { transform: translateX(8px); }
+.jt-body { border: 1px solid var(--line); border-radius: var(--r-md); padding: 1.2rem 1.4rem 1.35rem; transition: border-color 0.4s, transform 0.7s var(--ease), opacity 0.6s var(--ease); }
+.jt-body h3 { font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em; }
+.jt-body p { color: var(--mut); max-width: 54ch; margin-top: 0.4rem; }
+.jt-item.cur .jt-body { border-color: color-mix(in srgb, var(--fg) 55%, var(--line)); transform: translateX(6px); }
+/* dimmed until the line reaches the step (only when JS is running, so content is never hidden without it) */
+.jt-ready .jt-item:not(.on) .jt-y, .jt-ready .jt-item:not(.on) .jt-body { opacity: 0.28; }
+@media (min-width: 760px) {
+  .jt { --lx: calc(var(--yw) + 1rem); }
+  .jt-item { grid-template-columns: var(--yw) 1fr; gap: 2rem; align-items: start; padding-left: 0; padding-block: 1.5rem; }
+  .jt-dot { top: calc(1.5rem + clamp(1rem, 2.5vw, 1.8rem) - 8px); }
+}
+
+/* beyond code */
+.intr-list { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+.intr { display: inline-flex; align-items: center; gap: 0.7rem; padding: 0.8rem 1.45rem; border: 1px solid var(--line); border-radius: 999px; font-size: 1.05rem; user-select: none; -webkit-user-select: none; transition: background 0.35s, color 0.35s, border-color 0.35s; }
+.intr i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; transition: transform 0.6s var(--spring); }
+.intr:hover { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.intr:hover i { transform: scale(1.7); }
+.fun2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; }
+.fun2 > li { display: grid; }
+.fun-card { height: 100%; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg); transition: border-color 0.4s; will-change: transform; }
+.fun-card:hover { border-color: var(--fg); }
+.fun-in { height: 100%; min-height: 10.5rem; display: grid; grid-template-rows: auto 1fr; align-content: space-between; gap: 1.4rem; padding: 1.3rem 1.3rem 1.4rem; }
+.fun-top { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
+.fun-n { font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace; font-size: 0.78rem; color: var(--mut); }
+.fun-k { color: var(--mut); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; }
+.fun-v { align-self: end; font-size: clamp(1.1rem, 1.6vw, 1.3rem); font-weight: 650; letter-spacing: -0.025em; line-height: 1.18; }
+
+/* side rail (wide screens only) */
+.rail { position: fixed; right: clamp(0.75rem, 1.6vw, 1.5rem); top: 50%; z-index: 60; display: none; transform: translate(14px, -50%); opacity: 0; pointer-events: none; transition: opacity 0.6s var(--ease), transform 0.8s var(--ease); }
+@media (min-width: 1180px) { .rail { display: block; } }
+.rail.show { opacity: 1; transform: translate(0, -50%); pointer-events: auto; }
+.rail ul { display: grid; gap: 0.35rem; position: relative; }
+.rail-track { position: absolute; right: 4px; top: 0.9rem; bottom: 0.9rem; width: 1px; background: var(--line); }
+.rail-track i { position: absolute; left: 0; top: 0; width: 1px; background: var(--fg); transition: height 0.7s var(--ease); }
+.rail button { position: relative; display: flex; align-items: center; justify-content: flex-end; gap: 0.8rem; height: 1.8rem; width: 100%; }
+.rail-l { font-size: 0.8rem; letter-spacing: 0.04em; color: var(--mut); opacity: 0; transform: translateX(8px); transition: opacity 0.35s, transform 0.5s var(--ease), color 0.3s; white-space: nowrap; }
+.rail button:hover .rail-l, .rail button:focus-visible .rail-l, .rail button.on .rail-l { opacity: 1; transform: none; }
+.rail button.on .rail-l { color: var(--fg); }
+.rail-d { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--mut); background: var(--bg); flex: none; transition: background 0.35s, border-color 0.35s, transform 0.5s var(--spring); }
+.rail button.past .rail-d { border-color: var(--fg); }
+.rail button.on .rail-d { background: var(--fg); border-color: var(--fg); transform: scale(1.35); }
+.rail button:hover .rail-d { border-color: var(--fg); transform: scale(1.35); }
+
+@media (prefers-reduced-motion: reduce) {
+  .jt-line { transform: scaleY(1); }
+  .rail { transform: translateY(-50%); }
+}

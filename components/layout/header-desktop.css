@@ -1,0 +1,8 @@
+/* Desktop (>= 1040px): the nav links are already in the header, so the menu button and its overlay are removed.
+   Below 1040px the menu button stays, because the nav links are hidden there. */
+@media (min-width: 1040px) {
+  .menu-btn,
+  .menu {
+    display: none;
+  }
+}

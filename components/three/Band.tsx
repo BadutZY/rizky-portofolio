@@ -1,0 +1,450 @@
+import * as THREE from "three";
+import { useEffect, useRef, useState } from "react";
+import { useFrame } from "@react-three/fiber";
+import { useGLTF, useTexture } from "@react-three/drei";
+import {
+  BallCollider,
+  CuboidCollider,
+  RigidBody,
+  useRopeJoint,
+  useSphericalJoint,
+  RapierRigidBody,
+} from "@react-three/rapier";
+
+const segmentProps = {
+  type: "dynamic",
+  canSleep: true,
+  colliders: false,
+  angularDamping: 2,
+  linearDamping: 2,
+} as const;
+
+// The band is a solid 3D strip rebuilt every frame, so it can twist with the card and loop through
+// the ring. Samples run from the stitched end of the loop, around the ring, then up the rope.
+const LOOP_SAMPLES = 24; // wrapped around the ring, rigid with the card
+const FREE_SAMPLES = 64; // hanging from the physics rope
+const ATTACH = LOOP_SAMPLES - 1; // sample where the band leaves the loop
+const SAMPLES = ATTACH + FREE_SAMPLES;
+const HALF_WIDTH = 0.11; // same width the old meshline band had
+const HALF_THICKNESS = 0.006;
+const TORSION = 7.5; // rad/s² per radian of twist (old "face the screen" pull had this stiffness)
+const GRIP = 25; // 1/s: how fast the grabbed point catches up with the pointer (lower = looser hold)
+const TOWARD_CAMERA = new THREE.Vector3(0, 0, 1);
+const MAX_DELTA = 1 / 30; // longest time step used by the band logic, in seconds
+const MAX_TWIST = Math.PI; // rad: strongest twist the torsion pull reacts to
+const MAX_SPIN = 12; // rad/s: the card is never allowed to spin faster than this
+
+// Loop around the ring's top bar, in card.glb model space (clip mesh: bar centre y≈1.224 z=0,
+// ±0.024 deep, lowest y≈1.211 under the band edges), leaving room for the band's thickness.
+// Starts at the stitched end behind the band, goes down, under the bar and back up the front.
+// Above y=1.3 both layers run flat together for RIVET_RUN, where the rivet holds them (straight
+// samples: a spline through there bulges the back layer into the front one).
+const RIVET_RUN = 0.05;
+const LOOP = [
+  new THREE.Vector3(0, 1.3 + RIVET_RUN, 0.0223),
+  ...new THREE.CatmullRomCurve3(
+    [
+      new THREE.Vector3(0, 1.3, 0.0223),
+      new THREE.Vector3(0, 1.25, -0.0226),
+      new THREE.Vector3(0, 1.2237, -0.0282),
+      new THREE.Vector3(0, 1.2067, 0),
+      new THREE.Vector3(0, 1.2237, 0.0282),
+      new THREE.Vector3(0, 1.26, 0.0282),
+      new THREE.Vector3(0, 1.3, 0.0282),
+    ],
+    false,
+    "centripetal",
+  ).getPoints(ATTACH - 2),
+  new THREE.Vector3(0, 1.3 + RIVET_RUN, 0.0282),
+];
+const LOOP_EXIT = new THREE.Vector3(0, 1.36 + RIVET_RUN, 0.0282); // band leaves the loop straight up
+// Rivet through both layers, centred between them so its dome shows on the front and back.
+const RIVET_POSITION = new THREE.Vector3(
+  0,
+  1.3 + RIVET_RUN / 2,
+  (0.0223 + 0.0282) / 2,
+);
+// Spot across tag_texture.png's width (0 = left edge, 1 = right edge) that sits under the rivet:
+// the middle of its blank gap, so the rivet isn't punched through the print.
+const PRINT_GAP = 0.75;
+
+// Vertices per sample: [corner, normal from face (0) or side (1), normal sign, v]. Corners are
+// front-left, front-right, back-left, back-right; back face v is flipped so its print reads right.
+const LAYOUT = [
+  [0, 0, 1, 0],
+  [1, 0, 1, 1], // front face
+  [2, 0, -1, 1],
+  [3, 0, -1, 0], // back face
+  [0, 1, -1, 0],
+  [2, 1, -1, 0], // left edge
+  [1, 1, 1, 1],
+  [3, 1, 1, 1], // right edge
+] as const;
+const points = Array.from({ length: SAMPLES }, () => new THREE.Vector3());
+const tangents = Array.from({ length: SAMPLES }, () => new THREE.Vector3());
+const sides = Array.from({ length: SAMPLES }, () => new THREE.Vector3());
+const lengths = new Float32Array(SAMPLES);
+const corners = Array.from({ length: 4 }, () => new THREE.Vector3());
+const cardX = new THREE.Vector3();
+const _q = new THREE.Quaternion();
+const _v = new THREE.Vector3();
+const _n = new THREE.Vector3();
+
+function createRibbon() {
+  const geometry = new THREE.BufferGeometry();
+  const count = SAMPLES * LAYOUT.length;
+  geometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(new Float32Array(count * 3), 3),
+  );
+  geometry.setAttribute(
+    "normal",
+    new THREE.BufferAttribute(new Float32Array(count * 3), 3),
+  );
+  geometry.setAttribute(
+    "uv",
+    new THREE.BufferAttribute(new Float32Array(count * 2), 2),
+  );
+  const index: number[] = [];
+  for (let a = 0; a < (SAMPLES - 1) * 8; a += 8) {
+    const b = a + 8; // same vertex on the next sample
+    index.push(
+      a,
+      a + 1,
+      b,
+      a + 1,
+      b + 1,
+      b, // front
+      a + 2,
+      b + 2,
+      a + 3,
+      a + 3,
+      b + 2,
+      b + 3, // back
+      a + 5,
+      a + 4,
+      b + 5,
+      a + 4,
+      b + 4,
+      b + 5, // left edge
+      a + 6,
+      a + 7,
+      b + 6,
+      a + 7,
+      b + 7,
+      b + 6, // right edge
+    );
+  }
+  geometry.setIndex(index);
+  return geometry;
+}
+
+/**
+ * Rebuilds the strip. `model` is the card's rendered glb group; `curve` goes from the loop exit up
+ * the rope (points 0-1 are set here from the ring, 2+ by the caller from the physics bodies).
+ * The free band faces the camera at the top, is parallel-transported down, then twisted gradually
+ * so it meets the loop along the card's X axis. Returns that twist, unwrapped against the previous
+ * frame so a full spin keeps winding the band instead of snapping back.
+ */
+function updateRibbon(
+  geometry: THREE.BufferGeometry,
+  curve: THREE.CatmullRomCurve3,
+  model: THREE.Object3D,
+  prevTwist: number,
+) {
+  const last = SAMPLES - 1;
+  cardX.set(1, 0, 0).applyQuaternion(model.getWorldQuaternion(_q)); // also updates matrixWorld
+  curve.points[0].copy(LOOP[ATTACH]).applyMatrix4(model.matrixWorld);
+  curve.points[1].copy(LOOP_EXIT).applyMatrix4(model.matrixWorld);
+  for (let i = 0; i < ATTACH; i++)
+    points[i].copy(LOOP[i]).applyMatrix4(model.matrixWorld);
+  for (let i = ATTACH; i <= last; i++)
+    curve.getPoint((i - ATTACH) / (last - ATTACH), points[i]);
+  for (let i = 0; i <= last; i++) {
+    tangents[i]
+      .subVectors(points[Math.min(i + 1, last)], points[Math.max(i - 1, 0)])
+      .normalize();
+    lengths[i] =
+      i === 0 ? 0 : lengths[i - 1] + points[i].distanceTo(points[i - 1]);
+  }
+
+  sides[last].crossVectors(tangents[last], TOWARD_CAMERA).normalize();
+  for (let i = last - 1; i >= ATTACH; i--)
+    sides[i]
+      .copy(sides[i + 1])
+      .applyQuaternion(_q.setFromUnitVectors(tangents[i + 1], tangents[i]));
+
+  let twist = prevTwist;
+  _v.copy(cardX).projectOnPlane(tangents[ATTACH]);
+  if (_v.lengthSq() > 1e-6) {
+    // (skipped for the instant the band runs exactly along the card's X axis)
+    const s = sides[ATTACH],
+      t = tangents[ATTACH];
+    const raw = Math.atan2(_n.crossVectors(s, _v).dot(t), s.dot(_v));
+    twist = raw + 2 * Math.PI * Math.round((prevTwist - raw) / (2 * Math.PI));
+  }
+  for (let i = ATTACH; i <= last; i++)
+    sides[i].applyAxisAngle(
+      tangents[i],
+      twist * (1 - (i - ATTACH) / (last - ATTACH)),
+    );
+  for (let i = 0; i < ATTACH; i++) sides[i].copy(cardX); // the loop is rigid with the card
+
+  const rivetAt = (lengths[ATTACH - 1] + lengths[ATTACH]) / 2; // rivet is midway up the flat run
+  const position = geometry.getAttribute("position") as THREE.BufferAttribute;
+  const normal = geometry.getAttribute("normal") as THREE.BufferAttribute;
+  const uv = geometry.getAttribute("uv") as THREE.BufferAttribute;
+  for (let i = 0; i <= last; i++) {
+    const p = points[i],
+      side = sides[i];
+    _n.crossVectors(side, tangents[i]).normalize();
+    for (let c = 0; c < 4; c++)
+      corners[c]
+        .copy(p)
+        .addScaledVector(side, c % 2 ? HALF_WIDTH : -HALF_WIDTH)
+        .addScaledVector(_n, c < 2 ? HALF_THICKNESS : -HALF_THICKNESS);
+    // texture repeats 3x along the band, as before, pinned so PRINT_GAP stays under the rivet
+    const u = (-3 * (lengths[i] - rivetAt)) / (lengths[last] || 1) + PRINT_GAP;
+    for (let k = 0; k < LAYOUT.length; k++) {
+      const [c, fromSide, sign, v] = LAYOUT[k];
+      const nrm = fromSide ? side : _n;
+      position.setXYZ(i * 8 + k, corners[c].x, corners[c].y, corners[c].z);
+      normal.setXYZ(i * 8 + k, nrm.x * sign, nrm.y * sign, nrm.z * sign);
+      uv.setXY(i * 8 + k, u, v);
+    }
+  }
+  position.needsUpdate = normal.needsUpdate = uv.needsUpdate = true;
+  return twist;
+}
+
+export default function Band({
+  maxSpeed = 50,
+  minSpeed = 10,
+  cardUrl,
+  tagUrl,
+  active = true,
+}: {
+  /** False while the badge is scrolled out of view (the render loop is stopped then). */
+  active?: boolean;
+  maxSpeed?: number;
+  minSpeed?: number;
+  /** 1080x1080 card artwork: front on the left half, back on the right half. */
+  cardUrl: string;
+  /** 1024x248 print repeated along the lanyard. */
+  tagUrl: string;
+}) {
+  const fixed = useRef<RapierRigidBody>(null!);
+  const j1 = useRef<RapierRigidBody>(null!);
+  const j2 = useRef<RapierRigidBody>(null!);
+  const j3 = useRef<RapierRigidBody>(null!);
+
+  const card = useRef<RapierRigidBody>(null!);
+  const model = useRef<THREE.Group>(null!);
+  const twist = useRef(0);
+  const [ribbon] = useState(createRibbon);
+  const vec = new THREE.Vector3();
+  const ang = new THREE.Vector3();
+  const dir = new THREE.Vector3();
+  const [dragged, drag] = useState<THREE.Vector3 | false>(false);
+  const [hovered, hover] = useState(false);
+
+  const skin = useTexture(cardUrl, (t) => {
+    t.flipY = false; // glTF UV convention
+    t.anisotropy = 8;
+  });
+  const { nodes, materials } = useGLTF("/assets/3d/card.glb");
+  const texture = useTexture(tagUrl, (t) => {
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  });
+
+  const [curve] = useState(
+    () =>
+      new THREE.CatmullRomCurve3(
+        [
+          new THREE.Vector3(),
+          new THREE.Vector3(),
+          new THREE.Vector3(),
+          new THREE.Vector3(),
+          new THREE.Vector3(),
+        ],
+        false,
+        "chordal",
+      ),
+  );
+
+  useRopeJoint(fixed, j1, [[0, 0, 0], [0, 0, 0], 1]);
+  useRopeJoint(j1, j2, [[0, 0, 0], [0, 0, 0], 1]);
+  useRopeJoint(j2, j3, [[0, 0, 0], [0, 0, 0], 1]);
+
+  useSphericalJoint(j3, card, [
+    [0, 0, 0],
+    [0, 1.45, 0],
+  ]);
+
+  // Never leave the card "held" by a pointer that is gone: when the badge is scrolled out of view, the tab is
+  // hidden or the pointer is released outside the canvas, let go. A stuck drag keeps yanking the card toward
+  // a stale pointer position, which looks like the badge moving on its own.
+  useEffect(() => {
+    if (!active) drag(false);
+  }, [active]);
+
+  useEffect(() => {
+    const release = () => drag(false);
+    const onVisibility = () => document.hidden && release();
+    window.addEventListener("pointerup", release);
+    window.addEventListener("pointercancel", release);
+    window.addEventListener("blur", release);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("pointerup", release);
+      window.removeEventListener("pointercancel", release);
+      window.removeEventListener("blur", release);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (hovered) {
+      document.body.style.cursor = dragged ? "grabbing" : "grab";
+      return () => void (document.body.style.cursor = "auto");
+    }
+    return () => void (document.body.style.cursor = "auto");
+  }, [hovered, dragged]);
+
+  useFrame((state, rawDelta) => {
+    // After the render loop was paused (scrolled away, hidden tab) the first frame reports the whole time
+    // that passed. Using that as a time step is what made the badge spin: clamp it to one normal frame.
+    const delta = Math.min(rawDelta, MAX_DELTA);
+    if (
+      !fixed.current ||
+      !j1.current ||
+      !j2.current ||
+      !model.current ||
+      !card.current
+    )
+      return;
+
+    if (dragged) {
+      vec.set(state.pointer.x, state.pointer.y, 0.5).unproject(state.camera);
+      dir.copy(vec).sub(state.camera.position).normalize();
+      vec.add(dir.multiplyScalar(state.camera.position.length()));
+      [card, j1, j2, j3, fixed].forEach((ref) => ref.current?.wakeUp());
+      // The card stays dynamic and its grabbed point is pulled toward the pointer, so the strap
+      // still stops it at full length and tilts it, instead of the card sliding around rigid.
+      vec
+        .sub(_v.copy(dragged).applyQuaternion(_q.copy(card.current.rotation())))
+        .sub(card.current.translation());
+      // capped, or a pointer far past the strap's reach yanks hard enough to stretch the strap
+      card.current.setLinvel(vec.clampLength(0, 1).multiplyScalar(GRIP), true);
+    }
+
+    if (fixed.current) {
+      const [j1Lerped, j2Lerped] = [j1, j2].map((ref) => {
+        if (ref.current) {
+          const lerped = new THREE.Vector3().copy(ref.current.translation());
+
+          const clampedDistance = Math.max(
+            0.1,
+            Math.min(1, lerped.distanceTo(ref.current.translation())),
+          );
+
+          return lerped.lerp(
+            ref.current.translation(),
+            delta * (minSpeed + clampedDistance * (maxSpeed - minSpeed)),
+          );
+        }
+      });
+
+      // The band end follows the card's rendered (interpolated) model, not raw j3: with
+      // `interpolate` the card is drawn up to one physics step behind j3.
+      curve.points[2].copy(j2Lerped ?? j2.current.translation());
+      curve.points[3].copy(j1Lerped ?? j1.current.translation());
+      curve.points[4].copy(fixed.current.translation());
+      twist.current = updateRibbon(ribbon, curve, model.current, twist.current);
+
+      // Torsion: a twisted band turns the card back; at rest it keeps the card facing the screen.
+      // The twist is capped so a band wound up over several turns can never snap the card around, and the
+      // card's spin is limited so it always settles back to hanging still.
+      const pull = THREE.MathUtils.clamp(twist.current, -MAX_TWIST, MAX_TWIST);
+      ang
+        .copy(card.current.angvel())
+        .addScaledVector(tangents[ATTACH], -TORSION * pull * delta)
+        .clampLength(0, MAX_SPIN);
+      card.current.setAngvel(ang, Math.abs(twist.current) > 0.05);
+    }
+  });
+
+  return (
+    <>
+      <group position={[0, 4.6, 0]}>
+        <RigidBody ref={fixed} {...segmentProps} type="fixed" />
+        <RigidBody position={[0.5, 0, 0]} ref={j1} {...segmentProps}>
+          <BallCollider args={[0.1]} />
+        </RigidBody>
+        <RigidBody position={[1, 0, 0]} ref={j2} {...segmentProps}>
+          <BallCollider args={[0.1]} />
+        </RigidBody>
+        <RigidBody position={[1.5, 0, 0]} ref={j3} {...segmentProps}>
+          <BallCollider args={[0.1]} />
+        </RigidBody>
+
+        <RigidBody position={[2, 0, 0]} ref={card} {...segmentProps}>
+          <CuboidCollider args={[0.8, 1.125, 0.01]} />
+          <group
+            ref={model}
+            scale={2.25}
+            position={[0, -1.25, -0.05]}
+            onPointerOver={() => hover(true)}
+            onPointerOut={() => hover(false)}
+            onPointerCancel={() => drag(false)}
+            onPointerUp={(e) => (
+              (e.target as Element)?.releasePointerCapture(e.pointerId),
+              drag(false)
+            )}
+            onPointerDown={(e) => (
+              (e.target as Element)?.setPointerCapture(e.pointerId),
+              card.current &&
+                drag(
+                  // grabbed point in card space, so it stays under the pointer as the card turns
+                  new THREE.Vector3()
+                    .copy(e.point)
+                    .sub(card.current.translation())
+                    .applyQuaternion(_q.copy(card.current.rotation()).invert()),
+                )
+            )}
+          >
+            {/* @ts-expect-error geometry/map are not declared? */}
+            <mesh geometry={nodes.card.geometry}>
+              <meshPhysicalMaterial
+                map={skin}
+                clearcoat={1}
+                clearcoatRoughness={0.15}
+                roughness={0.3}
+                metalness={0.65} // with page.tsx lighting, shows the photo at its own brightness
+              />
+            </mesh>
+            <mesh
+              // @ts-expect-error geometry/map are not declared?
+              geometry={nodes.clip.geometry}
+              material={materials.metal}
+              material-roughness={0.3}
+            />
+            {/* @ts-expect-error geometry/map are not declared? */}
+            <mesh geometry={nodes.clamp.geometry} material={materials.metal} />
+            <mesh position={RIVET_POSITION} scale={[1, 1, 0.75]}>
+              <sphereGeometry args={[0.017, 32, 16]} />
+              <meshStandardMaterial
+                color="#e4e4e4"
+                metalness={0.7}
+                roughness={0.3}
+              />
+            </mesh>
+          </group>
+        </RigidBody>
+      </group>
+      <mesh geometry={ribbon} frustumCulled={false}>
+        <meshStandardMaterial map={texture} />
+      </mesh>
+    </>
+  );
+}
