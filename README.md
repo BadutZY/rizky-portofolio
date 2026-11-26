@@ -59,8 +59,8 @@ Website dibangun dengan Next.js App Router dan seluruh kontennya terpusat di sat
 
 ```bash
 # Kloning repositori
-git clone https://github.com/BadutZY/rizky-portfolio.git
-cd rizky-portfolio
+git clone https://github.com/BadutZY/rizky-portofolio.git
+cd rizky-portofolio
 
 # Pasang dependensi
 npm install      # atau: pnpm install
@@ -98,7 +98,7 @@ Proyek ini tidak membutuhkan variabel lingkungan (environment variable) maupun A
 ## Struktur Proyek
 
 ```
-rizky-portfolio/
+rizky-portofolio/
 |-- app/                      # Halaman (App Router) dan CSS tiap halaman
 |   |-- layout.tsx            # Layout utama, metadata, dan font
 |   |-- template.tsx          # Transisi antar halaman
