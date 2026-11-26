@@ -14,7 +14,7 @@ export const site = {
   timezone: "Asia/Jakarta",
   email: "",
   intro:
-    "I'm an 18-year-old vibe coder from Bogor who builds websites, games and Minecraft mods, one curious experiment at a time.",
+    "I'm a 17-year-old vibe coder from Bogor who builds websites, games and Minecraft mods, one curious experiment at a time.",
   available: true,
   status: "Open to collaboration",
   badge: "OPEN TO COLLABORATE - LET'S BUILD TOGETHER - ",
@@ -67,14 +67,14 @@ export const about = {
     { icon: "code", text: "Coding since 2023" },
   ],
   paragraphs: [
-    "Hi, I'm Rizky Maulana Putra, an 18-year-old vibe coder from Bogor, Indonesia. I'm in my final year of vocational school, majoring in Software Engineering.",
+    "Hi, I'm Rizky Maulana Putra, a 17-year-old vibe coder from Bogor, Indonesia. I'm in my final year of vocational school, majoring in Software Engineering.",
     "My coding journey started in 2023 with a simple portfolio site in HTML and CSS. Since then I've built websites, games, mobile apps and Minecraft mods, and I keep exploring new frameworks and tools along the way.",
     "I'm also a long-time JKT48 fan, which is why several of my projects have a JKT48 link, like the VYRÉZTA fanbase website and JKT48 Stream. Building things for something I enjoy keeps me motivated.",
     "Every project I've made so far was built with the help of AI, and I'm upfront about that. I'm still learning, and I'm happy to collaborate with others or build a website for you.",
   ],
   facts: [
     { k: "Born in", v: "Bogor, Indonesia" },
-    { k: "Age", v: "18 years old" },
+    { k: "Age", v: "17 years old" },
     { k: "School", v: "Vocational High School, Software Engineering" },
     { k: "Year", v: "Grade 12 (final year)" },
     { k: "Focus", v: "Web, games and mods" },
