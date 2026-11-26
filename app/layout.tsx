@@ -20,6 +20,10 @@ const font = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://rizkymp.my.id"),
+  verification: {
+    google: "I_4_fX2KLHYeWVqfJ2Lx2dOebJxxnKu39YE_y2vzr0w",
+  },
   title: { default: `${site.name} | ${site.roles[0]}`, template: `%s | ${site.name}` },
   description: site.intro,
   openGraph: {

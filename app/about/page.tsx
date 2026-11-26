@@ -16,8 +16,10 @@ import QuoteBlock from "@/components/about/QuoteBlock";
 import JourneyTimeline from "@/components/about/JourneyTimeline";
 import BeyondCode from "@/components/about/BeyondCode";
 import AboutRail from "@/components/about/AboutRail";
+import MusicSection from "@/components/about/MusicSection";
 import "./geo.css";
 import "./about.css";
+import "./music.css";
 
 export const metadata: Metadata = { title: "About", description: about.statement };
 
@@ -27,6 +29,7 @@ const sections = [
   { id: "about-journey", label: "Journey" },
   { id: "about-location", label: "Location" },
   { id: "about-beyond", label: "Beyond code" },
+  { id: "about-music", label: "Music" },
 ];
 
 export default function AboutPage() {
@@ -106,6 +109,13 @@ export default function AboutPage() {
         <div className="wrap">
           <SectionHead index="04" title="Beyond code" sub="Interests and small facts" />
           <BeyondCode interests={about.interests} funFacts={about.funFacts} />
+        </div>
+      </section>
+
+      <section id="about-music" className="sec">
+        <div className="wrap">
+          <SectionHead index="05" title="Music" sub="Songs I keep on repeat" />
+          <MusicSection />
         </div>
       </section>
 

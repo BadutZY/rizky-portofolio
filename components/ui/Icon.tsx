@@ -69,6 +69,12 @@ const ICONS: Record<string, ReactNode> = {
   route: <><circle cx="6" cy="19" r="3" />{P("M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15")}<circle cx="18" cy="5" r="3" /></>,
   figma: <>{P("M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5z")}{P("M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z")}{P("M12 12.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 1 1-7 0z")}{P("M5 19.5A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 1 1-7 0z")}{P("M5 12.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5z")}</>,
   triangle: P("M13.73 4a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"),
+  // ── music player icons ──
+  play: P("M8 5.5v13l11-6.5z"),
+  pause: <><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></>,
+  music: <>{P("M9 18V5l12-2v13")}<circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></>,
+  "youtube-music": <><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4.6" />{P("m10.8 10.2 3 1.8-3 1.8z")}</>,
+  spotify: <><circle cx="12" cy="12" r="10" />{P("M6.6 9.4c3.6-1.1 7.6-.8 10.9 1")}{P("M7.2 12.6c3-.8 6-.5 8.7 1")}{P("M8 15.6c2.4-.6 4.7-.3 6.7.8")}</>,
 };
 
 export type IconName = keyof typeof ICONS | (string & {});
