@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Contributions, Day } from "@/lib/github";
 import Counter from "@/components/ui/Counter";
 import Icon from "@/components/ui/Icon";
@@ -18,17 +19,27 @@ const fmtShort = (d: string) => new Intl.DateTimeFormat("en-US", { month: "short
 const month = (d: string) => new Intl.DateTimeFormat("en-US", { month: "short", timeZone: "UTC" }).format(ms(d));
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const plural = (n: number) => `${n.toLocaleString("en-US")} contribution${n === 1 ? "" : "s"}`;
+const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), Math.max(lo, hi));
+
+// tooltip layout (px)
+const TIP_GAP = 12; // distance between the cell and the tooltip
+const TIP_EDGE = 8; // minimum distance to the screen edges
+const TIP_TOP_SAFE = 84; // space kept free at the top for the fixed header
+
+type Hover = { i: number; l: number; t: number; w: number; h: number };
+type TipPos = { x: number; y: number; side: "top" | "bottom"; ax: number };
 
 /** GitHub-style contribution heatmap, drawn in the site's black and white with brightness as the intensity. */
 export default function ContributionGraph({ data }: { data: Contributions }) {
   const [range, setRange] = useState<3 | 6 | 12>(12);
-  const [hover, setHover] = useState<{ i: number; x: number; y: number } | null>(null);
+  const [hover, setHover] = useState<Hover | null>(null);
+  const [tip, setTip] = useState<TipPos | null>(null);
   const [pinned, setPinned] = useState<string | null>(null);
   const [hl, setHl] = useState<number | null>(null);
   const [shown, setShown] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const scroller = useRef<HTMLDivElement>(null);
-  const wrap = useRef<HTMLDivElement>(null);
+  const tipEl = useRef<HTMLDivElement>(null);
 
   // the visible slice of days for the chosen range
   const days = useMemo<Day[]>(() => {
@@ -102,12 +113,53 @@ export default function ContributionGraph({ data }: { data: Contributions }) {
     const s = scroller.current;
     if (s) s.scrollLeft = s.scrollWidth;
   }, [range]);
-  useEffect(() => setPinned(null), [range]);
+  useEffect(() => {
+    setPinned(null);
+    setHover(null);
+  }, [range]);
+
+  // the tooltip is fixed to the screen, so close it when the page or the graph scrolls underneath it
+  useEffect(() => {
+    if (!hover) return;
+    const close = () => setHover(null);
+    const s = scroller.current;
+    window.addEventListener("scroll", close, { passive: true });
+    window.addEventListener("resize", close);
+    s?.addEventListener("scroll", close, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", close);
+      window.removeEventListener("resize", close);
+      s?.removeEventListener("scroll", close);
+    };
+  }, [hover]);
+
+  // place the tooltip next to the hovered cell: above by default, flipped below when there is no room,
+  // and always kept inside the screen. Measured before paint so it never flashes in the wrong spot.
+  useLayoutEffect(() => {
+    const el = tipEl.current;
+    if (!hover || !el) {
+      setTip(null);
+      return;
+    }
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    const vw = document.documentElement.clientWidth;
+    const vh = window.innerHeight;
+    const cx = hover.l + hover.w / 2;
+    const x = clamp(cx - w / 2, TIP_EDGE, vw - w - TIP_EDGE);
+    const above = hover.t - TIP_GAP - h;
+    const below = hover.t + hover.h + TIP_GAP;
+    const side: TipPos["side"] = above >= TIP_TOP_SAFE || below + h > vh - TIP_EDGE ? "top" : "bottom";
+    const y = side === "top" ? Math.max(TIP_EDGE, above) : below;
+    setTip({ x, y, side, ax: clamp(cx - x, 14, w - 14) });
+  }, [hover]);
 
   const onOver = (e: React.PointerEvent) => {
     const el = (e.target as HTMLElement).closest<HTMLElement>("[data-i]");
     if (!el) return;
-    setHover({ i: Number(el.dataset.i), x: el.offsetLeft + el.offsetWidth / 2, y: el.offsetTop });
+    const i = Number(el.dataset.i);
+    const r = el.getBoundingClientRect();
+    setHover((h) => (h?.i === i ? h : { i, l: r.left, t: r.top, w: r.width, h: r.height }));
   };
   const onClick = (e: React.MouseEvent) => {
     const el = (e.target as HTMLElement).closest<HTMLElement>("[data-i]");
@@ -116,10 +168,6 @@ export default function ContributionGraph({ data }: { data: Contributions }) {
     setPinned((p) => (p === d.date ? null : d.date));
   };
 
-  // tooltip position, kept inside the graph
-  const tipW = 190;
-  const wrapW = wrap.current?.offsetWidth ?? 0;
-  const tipX = hover ? Math.min(Math.max(hover.x, tipW / 2), Math.max(tipW / 2, wrapW - tipW / 2)) : 0;
   const pct = selected ? Math.round((selected.count / Math.max(stats.best.count, 1)) * 100) : 0;
   const first = days[0].date, lastD = days[days.length - 1].date;
 
@@ -159,7 +207,7 @@ export default function ContributionGraph({ data }: { data: Contributions }) {
                   <li key={n}>{i % 2 ? n : ""}</li>
                 ))}
               </ul>
-              <div ref={wrap} className="gh-wrap">
+              <div className="gh-wrap">
                 <div
                   key={range}
                   className="gh-grid"
@@ -185,13 +233,21 @@ export default function ContributionGraph({ data }: { data: Contributions }) {
                     }),
                   )}
                 </div>
-                {hover && (
-                  <div className="gh-tip" style={{ left: tipX, top: hover.y }} aria-hidden>
-                    <b>{plural(flat[hover.i].count)}</b>
-                    <span>{fmtLong(flat[hover.i].date)}</span>
-                    <i style={{ left: hover.x - tipX + tipW / 2 }} />
-                  </div>
-                )}
+                {hover &&
+                  flat[hover.i] &&
+                  createPortal(
+                    <div
+                      ref={tipEl}
+                      className={`gh-tip${tip?.side === "bottom" ? " below" : ""}`}
+                      style={tip ? { left: tip.x, top: tip.y } : { left: 0, top: 0, visibility: "hidden" }}
+                      aria-hidden
+                    >
+                      <b>{plural(flat[hover.i].count)}</b>
+                      <span>{fmtLong(flat[hover.i].date)}</span>
+                      <i style={{ left: tip?.ax ?? 0 }} />
+                    </div>,
+                    document.body,
+                  )}
               </div>
             </div>
           </div>

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import JsonLd from "@/components/seo/JsonLd";
+import { contactGraph, pageMeta } from "@/lib/seo";
 import { site, socials } from "@/lib/data";
 import PageHero from "@/components/pages/PageHero";
 import ContactForm from "@/components/pages/ContactForm";
@@ -16,7 +18,7 @@ import SocialCards from "@/components/contact/SocialCards";
 import AnalogClock from "@/components/contact/AnalogClock";
 import "./contact.css";
 
-export const metadata: Metadata = { title: "Contact", description: "Say hello, collaborate on a project or ask me to build you a website." };
+export const metadata: Metadata = pageMeta("contact");
 
 const BAND = ["Say hello", "Let's collaborate", "Websites", "Games", "Minecraft mods", "New ideas"];
 
@@ -26,6 +28,7 @@ export default function ContactPage() {
 
   return (
     <div className="ct-page">
+      <JsonLd data={contactGraph()} />
       <PageHero index="05" bg="contact" title="Contact" lead="Want to collaborate, have an idea or need a website? Say hello, I'd love to hear from you." />
       <HeroExtras timezone={site.timezone} targetId="ct-start" />
 

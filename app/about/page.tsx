@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import JsonLd from "@/components/seo/JsonLd";
+import { aboutGraph, pageMeta } from "@/lib/seo";
 import { about, site } from "@/lib/data";
 import PageHero from "@/components/pages/PageHero";
 import SectionHead from "@/components/pages/SectionHead";
@@ -21,7 +23,7 @@ import "./geo.css";
 import "./about.css";
 import "./music.css";
 
-export const metadata: Metadata = { title: "About", description: about.statement };
+export const metadata: Metadata = pageMeta("about");
 
 const sections = [
   { id: "about-intro", label: "Intro" },
@@ -35,6 +37,7 @@ const sections = [
 export default function AboutPage() {
   return (
     <>
+      <JsonLd data={aboutGraph()} />
       <AboutRail sections={sections} />
 
       <PageHero

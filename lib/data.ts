@@ -1,7 +1,4 @@
-/**
- * ALL WEBSITE CONTENT LIVES HERE.
- * Everything is filled in, including the Projects section. The components do not need to change.
- */
+//ALL WEBSITE CONTENT HERE.
 
 export const site = {
   name: "Rizky Maulana Putra",
@@ -211,7 +208,7 @@ export const education: Entry[] = [
 
 export const competitions = [
   { title: "Inception Vol. 2", org: "School website competition, Universitas Trisakti", year: "2026" },
-  { title: "UKK Competency Exam", org: "School website with Laravel and Blade", year: "2026" },
+  { title: "UKK Competency Exam", org: "School website with Laravel", year: "2026" },
   { title: "Grade 11 Final Projects", org: "A Java desktop app and a Laravel booking site", year: "2025" },
 ];
 
@@ -871,76 +868,79 @@ export type Skill = { name: string; logo?: string; icon?: string; mono?: boolean
 
 export const skills: { group: string; icon: string; items: Skill[] }[] = [
   {
-    group: "Frontend",
-    icon: "monitor",
+    group: "Programming Languages",
+    icon: "code",
+    items: [
+      { name: "JavaScript", logo: "javascript" },
+      { name: "TypeScript", logo: "typescript" },
+      { name: "PHP", logo: "php" },
+      { name: "Java", logo: "java" },
+      { name: "Kotlin", logo: "kotlin" },
+      { name: "C#", logo: "csharp" },
+      { name: "C++", logo: "cplusplus" },
+      { name: "GDScript", logo: "godot" },
+    ],
+  },
+  {
+    group: "Markup and Styling",
+    icon: "layout",
     items: [
       { name: "HTML", logo: "html5" },
       { name: "CSS", logo: "css3" },
-      { name: "JavaScript", logo: "javascript" },
-      { name: "TypeScript", logo: "typescript" },
-      { name: "React", logo: "react" },
-      { name: "Next.js", logo: "nextjs", mono: true },
-      { name: "Vite", logo: "vitejs" },
-      { name: "Tailwind CSS", logo: "tailwindcss" },
-      { name: "Bootstrap", logo: "bootstrap" },
-      { name: "Blade", icon: "braces" },
+      { name: "XML", icon: "code" },
     ],
   },
   {
-    group: "Backend and Database",
-    icon: "server",
+    group: "Frameworks",
+    icon: "layers",
     items: [
-      { name: "PHP", logo: "php" },
+      { name: "React", logo: "react" },
+      { name: "Next.js", logo: "nextjs", mono: true },
       { name: "Laravel", logo: "laravel" },
+      { name: "Tailwind CSS", logo: "tailwindcss" },
+      { name: "Bootstrap", logo: "bootstrap" },
+      { name: "React Native", logo: "react" },
+      { name: "Expo", logo: "expo", mono: true, icon: "smartphone" },
       { name: "Filament", icon: "layers" },
-      { name: "Node.js", logo: "nodejs" },
-      { name: "Prisma", logo: "prisma", mono: true },
-      { name: "SQL", icon: "database" },
+    ],
+  },
+  {
+    group: "Databases and ORM",
+    icon: "database",
+    items: [
       { name: "MySQL", logo: "mysql" },
       { name: "PostgreSQL", logo: "postgresql" },
       { name: "Supabase", logo: "supabase" },
+      { name: "Prisma", logo: "prisma", mono: true },
+      { name: "SQL", icon: "database" },
     ],
   },
   {
-    group: "Mobile",
-    icon: "smartphone",
+    group: "Runtimes and Platforms",
+    icon: "server",
     items: [
-      { name: "Kotlin", logo: "kotlin" },
-      { name: "XML", icon: "code" },
-      { name: "React Native", logo: "react" },
-      { name: "Expo", logo: "expo", mono: true, icon: "smartphone" },
-    ],
-  },
-  {
-    group: "Games and Hardware",
-    icon: "cpu",
-    items: [
-      { name: "C#", logo: "csharp" },
-      { name: "GDScript", logo: "godot" },
-      { name: "C++", logo: "cplusplus" },
-      { name: "ESP32", icon: "cpu" },
-    ],
-  },
-  {
-    group: "Minecraft Mod",
-    icon: "layers",
-    items: [
-      { name: "Java", logo: "java" },
+      { name: "Node.js", logo: "nodejs" },
       { name: "Fabric", logo: "/skills/fabric.webp" },
       { name: "Forge", logo: "/skills/forge.webp" },
       { name: "NeoForge", logo: "/skills/neoforge.webp" },
     ],
   },
   {
-    group: "Build and Deploy",
-    icon: "git-branch",
+    group: "Build Tools and Package Managers",
+    icon: "terminal",
     items: [
+      { name: "Vite", logo: "vitejs" },
       { name: "Gradle", logo: "gradle" },
       { name: "NPM", logo: "npm" },
       { name: "PNPM", logo: "pnpm" },
+    ],
+  },
+  {
+    group: "Tools and Services",
+    icon: "git-branch",
+    items: [
       { name: "Git", logo: "git" },
       { name: "GitHub", logo: "github", mono: true },
-      { name: "Figma", logo: "figma" },
       { name: "Vercel", logo: "vercel", mono: true },
     ],
   },

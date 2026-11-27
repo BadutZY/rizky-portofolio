@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import JsonLd from "@/components/seo/JsonLd";
+import { skillsGraph, pageMeta } from "@/lib/seo";
 import { learning, skills, tools } from "@/lib/data";
 import PageHero from "@/components/pages/PageHero";
 import SectionHead from "@/components/pages/SectionHead";
@@ -15,7 +17,7 @@ import "./skills.css";
 // the page is rebuilt at most once an hour, which also refreshes the GitHub contribution data
 export const revalidate = 3600;
 
-export const metadata: Metadata = { title: "Skills", description: "Tech stack, tools and my recent focus." };
+export const metadata: Metadata = pageMeta("skills");
 
 export default async function SkillsPage() {
   const gh = await getContributions();
@@ -29,6 +31,7 @@ export default async function SkillsPage() {
 
   return (
     <>
+      <JsonLd data={skillsGraph()} />
       <PageHero index="04" bg="skills" title="Skills" lead="The languages, frameworks and tools I've used across my projects, plus what I'm focused on lately." />
 
       <section className="band band-top">

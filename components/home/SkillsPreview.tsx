@@ -6,7 +6,7 @@ import SectionHead from "@/components/pages/SectionHead";
 import "@/app/skills/skills.css";
 
 /** Only these three stack groups are shown on the Home page. The Skills page still lists every group. */
-const HOME_GROUPS = ["Frontend", "Backend and Database", "Games and Hardware"];
+const HOME_GROUPS = ["Programming Languages", "Frameworks", "Databases and ORM"];
 
 /** Home summary of the Skills page: three stack groups with their top logos. */
 export default function SkillsPreview() {

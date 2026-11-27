@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import JsonLd from "@/components/seo/JsonLd";
+import { experienceGraph, pageMeta } from "@/lib/seo";
 import { competitions, education, experience, projects, published } from "@/lib/data";
 import PageHero from "@/components/pages/PageHero";
 import SectionHead from "@/components/pages/SectionHead";
@@ -13,7 +15,7 @@ import ExpCta from "@/components/experience/ExpCta";
 import "../about/about.css"; // side rail and shared band spacing
 import "./experience.css";
 
-export const metadata: Metadata = { title: "Experience", description: "What I've learned, built and published so far." };
+export const metadata: Metadata = pageMeta("experience");
 
 const sections = [
   { id: "exp-hands", label: "Hands-on" },
@@ -29,6 +31,7 @@ const bottomBand = projects.map((p) => p.title);
 export default function ExperiencePage() {
   return (
     <>
+      <JsonLd data={experienceGraph()} />
       <AboutRail sections={sections} />
 
       <PageHero index="03" bg="experience" title="Experience" lead="A timeline of what I've learned, built and published so far, from my first website to my final year of vocational school." />

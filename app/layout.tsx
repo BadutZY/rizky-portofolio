@@ -10,7 +10,8 @@ import SmoothScroll from "@/components/layout/SmoothScroll";
 import Providers from "@/components/layout/Providers";
 import Spotlight from "@/components/layout/Spotlight";
 import TransitionProvider from "@/components/layout/TransitionProvider";
-import { site } from "@/lib/data";
+import JsonLd from "@/components/seo/JsonLd";
+import { siteGraph, siteMeta } from "@/lib/seo";
 import "./globals.css";
 
 const font = Bricolage_Grotesque({
@@ -19,19 +20,7 @@ const font = Bricolage_Grotesque({
   variable: "--font",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://rizkymp.my.id"),
-  verification: {
-    google: "I_4_fX2KLHYeWVqfJ2Lx2dOebJxxnKu39YE_y2vzr0w",
-  },
-  title: { default: `${site.name} | ${site.roles[0]}`, template: `%s | ${site.name}` },
-  description: site.intro,
-  openGraph: {
-    title: `${site.name} | ${site.roles[0]}`,
-    description: site.intro,
-    type: "website",
-  },
-};
+export const metadata: Metadata = siteMeta();
 
 export const viewport: Viewport = {
   themeColor: [
@@ -53,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </noscript>
       </head>
       <body>
+        <JsonLd data={siteGraph()} />
         <SmoothScroll />
         <Providers>
         <Spotlight />

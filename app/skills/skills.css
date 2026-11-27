@@ -186,10 +186,13 @@
 .gh[data-hl="0"] .gh-grid .gh-c[data-l="0"], .gh[data-hl="1"] .gh-grid .gh-c[data-l="1"], .gh[data-hl="2"] .gh-grid .gh-c[data-l="2"],
 .gh[data-hl="3"] .gh-grid .gh-c[data-l="3"], .gh[data-hl="4"] .gh-grid .gh-c[data-l="4"] { opacity: 1; }
 
-.gh-tip { position: absolute; z-index: 5; width: 190px; transform: translate(-50%, calc(-100% - 12px)); padding: 0.6rem 0.8rem; border-radius: 12px; background: var(--fg); color: var(--bg); font-size: 0.8rem; line-height: 1.35; pointer-events: none; display: grid; gap: 0.1rem; text-align: center; }
+/* the tooltip lives in <body> and is fixed to the screen, so the graph's scroll area can never clip it */
+.gh-tip { position: fixed; z-index: 130; width: max-content; max-width: calc(100vw - 16px); padding: 0.55rem 0.85rem; border-radius: 12px; background: var(--fg); color: var(--bg); font-size: 0.8rem; line-height: 1.35; pointer-events: none; display: grid; gap: 0.1rem; text-align: center; white-space: nowrap; animation: gh-tip-in 0.15s ease-out both; }
 .gh-tip b { font-size: 0.9rem; }
 .gh-tip span { opacity: 0.7; }
 .gh-tip i { position: absolute; bottom: -4px; width: 8px; height: 8px; background: var(--fg); transform: translateX(-50%) rotate(45deg); }
+.gh-tip.below i { bottom: auto; top: -4px; }
+@keyframes gh-tip-in { from { opacity: 0; } to { opacity: 1; } }
 
 .gh-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.9rem 1.5rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: 0.88rem; }
 .gh-detail { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.9rem; min-height: 1.5rem; }
@@ -217,6 +220,7 @@
   .gh.in .gh-grid .gh-c:not(.gh-blank) { animation: none; }
   .gh:not(.in) .gh-grid .gh-c:not(.gh-blank) { opacity: 1; transform: none; }
   .gh-grid .gh-c.hot { transform: none; }
+  .gh-tip { animation: none; }
 }
 
 /* the global .chip.on is transparent (an animated pill sits behind it on the Projects page), so give these chips a plain fill */
