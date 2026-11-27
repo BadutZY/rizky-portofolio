@@ -64,7 +64,7 @@ const RIVET_POSITION = new THREE.Vector3(
   1.3 + RIVET_RUN / 2,
   (0.0223 + 0.0282) / 2,
 );
-// Spot across tag_texture.png's width (0 = left edge, 1 = right edge) that sits under the rivet:
+// Spot across tag_texture.webp's width (0 = left edge, 1 = right edge) that sits under the rivet:
 // the middle of its blank gap, so the rivet isn't punched through the print.
 const PRINT_GAP = 0.75;
 

@@ -1,8 +1,8 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="public/logo.png">
-  <img src="public/logo-black.png" height="100" alt="Logo Rizky Maulana Putra">
+  <source media="(prefers-color-scheme: dark)" srcset="public/logo.webp">
+  <img src="public/logo-black.webp" height="100" alt="Logo Rizky Maulana Putra">
 </picture>
 
 # Rizky Maulana Putra - Portfolio
@@ -180,7 +180,7 @@ Catatan penting:
 - **Email**: isi `site.email` agar formulir kontak dan semua tombol email aktif. Selama kosong, pengunjung diarahkan ke media sosial.
 - **CV**: taruh file di `public/` lalu isi `site.cv` (contoh `"/cv.pdf"`) agar tombol Download CV muncul.
 - **Statistik**: isi `about.stats` dengan item seperti `{ value: 10, suffix: "+", label: "Projects built" }`.
-- **Badge 3D**: ganti `card_dark.png`, `card_light.png`, `tag_dark.png`, dan `tag_light.png` di `public/assets/images/`. Kartu berukuran 1080x1080 (depan di kiri, belakang di kanan) dan tag berukuran 1024x248.
+- **Badge 3D**: ganti `card_dark.webp`, `card_light.webp`, `tag_dark.webp`, dan `tag_light.webp` di `public/assets/images/`. Kartu berukuran 1080x1080 (depan di kiri, belakang di kanan) dan tag berukuran 1024x248.
 
 ---
 

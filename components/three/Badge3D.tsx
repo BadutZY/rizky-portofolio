@@ -8,7 +8,7 @@ import { Physics } from "@react-three/rapier";
 import Band from "./Band";
 
 const MODEL = "/assets/3d/card.glb";
-const art = (theme: string) => ({ card: `/assets/images/card_${theme}.png`, tag: `/assets/images/tag_${theme}.png` });
+const art = (theme: string) => ({ card: `/assets/images/card_${theme}.webp`, tag: `/assets/images/tag_${theme}.webp` });
 
 /**
  * Interactive 3D lanyard badge: drag, throw and swing the card. Built on React Three Fiber and Rapier physics,

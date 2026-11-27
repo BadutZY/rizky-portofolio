@@ -290,8 +290,8 @@ export const projects: Project[] = [
     featured: true,
     gallery: [
       "/projects/vyrezta-website.webp",
-      { src: "/projects/vyrezta/tablet.png", caption: "Tablet" },
-      { src: "/projects/vyrezta/mobile.png", caption: "Mobile" },
+      { src: "/projects/vyrezta/tablet.webp", caption: "Tablet" },
+      { src: "/projects/vyrezta/mobile.webp", caption: "Mobile" },
     ],
   },
   {
@@ -330,8 +330,8 @@ export const projects: Project[] = [
     featured: true,
     gallery: [
       "/projects/badutzy-website.webp",
-      { src: "/projects/badutzy/tablet.png", caption: "Tablet" },
-      { src: "/projects/badutzy/mobile.png", caption: "Mobile" },
+      { src: "/projects/badutzy/tablet.webp", caption: "Tablet" },
+      { src: "/projects/badutzy/mobile.webp", caption: "Mobile" },
     ],
   },
   {
@@ -370,8 +370,8 @@ export const projects: Project[] = [
     featured: true,
     gallery: [
       "/projects/jkt48-stream.webp",
-      { src: "/projects/jkt48-stream/tablet.png", caption: "Tablet" },
-      { src: "/projects/jkt48-stream/mobile.png", caption: "Mobile" },
+      { src: "/projects/jkt48-stream/tablet.webp", caption: "Tablet" },
+      { src: "/projects/jkt48-stream/mobile.webp", caption: "Mobile" },
     ],
   },
   {
@@ -409,8 +409,8 @@ export const projects: Project[] = [
     art: "kanban",
     gallery: [
       "/projects/class-website.webp",
-      { src: "/projects/class/tablet.png", caption: "Tablet" },
-      { src: "/projects/class/mobile.png", caption: "Mobile" },
+      { src: "/projects/class/tablet.webp", caption: "Tablet" },
+      { src: "/projects/class/mobile.webp", caption: "Mobile" },
     ],
   },
   {
@@ -448,8 +448,8 @@ export const projects: Project[] = [
     art: "mobile",
     gallery: [
       "/projects/fritzyforce-website.webp",
-      { src: "/projects/fritzy-force/tablet.png", caption: "Tablet" },
-      { src: "/projects/fritzy-force/mobile.png", caption: "Mobile" },
+      { src: "/projects/fritzy-force/tablet.webp", caption: "Tablet" },
+      { src: "/projects/fritzy-force/mobile.webp", caption: "Mobile" },
     ],
   },
   {
@@ -487,8 +487,8 @@ export const projects: Project[] = [
     art: "landing",
     gallery: [
       "/projects/solar-system.webp",
-      { src: "/projects/solar-system/tablet.png", caption: "Tablet" },
-      { src: "/projects/solar-system/mobile.png", caption: "Mobile" },
+      { src: "/projects/solar-system/tablet.webp", caption: "Tablet" },
+      { src: "/projects/solar-system/mobile.webp", caption: "Mobile" },
     ],
   },
   {
@@ -526,8 +526,8 @@ export const projects: Project[] = [
     art: "landing",
     gallery: [
       "/projects/boxsiege-website.webp",
-      { src: "/projects/boxsiege/tablet.png", caption: "Tablet" },
-      { src: "/projects/boxsiege/mobile.png", caption: "Mobile" },
+      { src: "/projects/boxsiege/tablet.webp", caption: "Tablet" },
+      { src: "/projects/boxsiege/mobile.webp", caption: "Mobile" },
     ],
   },
   {
@@ -565,8 +565,8 @@ export const projects: Project[] = [
     art: "dashboard",
     gallery: [
       "/projects/super-pixel-website.webp",
-      { src: "/projects/super-pixel/tablet.png", caption: "Tablet" },
-      { src: "/projects/super-pixel/mobile.png", caption: "Mobile" },
+      { src: "/projects/super-pixel/tablet.webp", caption: "Tablet" },
+      { src: "/projects/super-pixel/mobile.webp", caption: "Mobile" },
     ],
   },
   {
@@ -604,8 +604,8 @@ export const projects: Project[] = [
     art: "blog",
     gallery: [
       "/projects/badutzy-studio.webp",
-      { src: "/projects/badutzy-studio/tablet.png", caption: "Tablet" },
-      { src: "/projects/badutzy-studio/mobile.png", caption: "Mobile" },
+      { src: "/projects/badutzy-studio/tablet.webp", caption: "Tablet" },
+      { src: "/projects/badutzy-studio/mobile.webp", caption: "Mobile" },
     ],
   },
   {
@@ -643,8 +643,8 @@ export const projects: Project[] = [
     art: "landing",
     gallery: [
       "/projects/equinox-website.webp",
-      { src: "/projects/equinox/tablet.png", caption: "Tablet" },
-      { src: "/projects/equinox/mobile.png", caption: "Mobile" },
+      { src: "/projects/equinox/tablet.webp", caption: "Tablet" },
+      { src: "/projects/equinox/mobile.webp", caption: "Mobile" },
     ],
   },
   {
@@ -682,8 +682,8 @@ export const projects: Project[] = [
     art: "mobile",
     gallery: [
       "/projects/trash-collector.webp",
-      { src: "/projects/trash-collector/tablet.png", caption: "Tablet" },
-      { src: "/projects/trash-collector/mobile.png", caption: "Mobile" },
+      { src: "/projects/trash-collector/tablet.webp", caption: "Tablet" },
+      { src: "/projects/trash-collector/mobile.webp", caption: "Mobile" },
     ],
   },
   {
@@ -725,11 +725,11 @@ export const projects: Project[] = [
     art: "dashboard",
     gallery: [
       { src: "/projects/jkt48-guess-who.webp", caption: "JKT48 edition, desktop" },
-      { src: "/projects/jkt48-guess-who/tablet.png", caption: "JKT48 edition, tablet" },
-      { src: "/projects/jkt48-guess-who/mobile.png", caption: "JKT48 edition, mobile" },
+      { src: "/projects/jkt48-guess-who/tablet.webp", caption: "JKT48 edition, tablet" },
+      { src: "/projects/jkt48-guess-who/mobile.webp", caption: "JKT48 edition, mobile" },
       { src: "/projects/valo-guess-who.webp", caption: "Valorant edition, desktop" },
-      { src: "/projects/valo-guess-who/tablet.png", caption: "Valorant edition, tablet" },
-      { src: "/projects/valo-guess-who/mobile.png", caption: "Valorant edition, mobile" },
+      { src: "/projects/valo-guess-who/tablet.webp", caption: "Valorant edition, tablet" },
+      { src: "/projects/valo-guess-who/mobile.webp", caption: "Valorant edition, mobile" },
     ],
   },
   {
@@ -767,8 +767,8 @@ export const projects: Project[] = [
     art: "blog",
     gallery: [
       "/projects/quiz-materi.webp",
-      { src: "/projects/quiz-materi/tablet.png", caption: "Tablet" },
-      { src: "/projects/quiz-materi/mobile.png", caption: "Mobile" },
+      { src: "/projects/quiz-materi/tablet.webp", caption: "Tablet" },
+      { src: "/projects/quiz-materi/mobile.webp", caption: "Mobile" },
     ],
   },
   {
@@ -806,8 +806,8 @@ export const projects: Project[] = [
     art: "kanban",
     gallery: [
       "/projects/chained-together.webp",
-      { src: "/projects/chained-together/tablet.png", caption: "Tablet" },
-      { src: "/projects/chained-together/mobile.png", caption: "Mobile" },
+      { src: "/projects/chained-together/tablet.webp", caption: "Tablet" },
+      { src: "/projects/chained-together/mobile.webp", caption: "Mobile" },
     ],
   },
   {
@@ -845,8 +845,8 @@ export const projects: Project[] = [
     art: "landing",
     gallery: [
       "/projects/jkt48-website.webp",
-      { src: "/projects/jkt48/tablet.png", caption: "Tablet" },
-      { src: "/projects/jkt48/mobile.png", caption: "Mobile" },
+      { src: "/projects/jkt48/tablet.webp", caption: "Tablet" },
+      { src: "/projects/jkt48/mobile.webp", caption: "Mobile" },
     ],
   },
 ];
